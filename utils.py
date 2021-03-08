@@ -4,29 +4,6 @@ import json
 import sys
 
 
-def load_df(filename, required_columns=None):
-    """
-    Loads pandas dataframe from TAB-separated CSV.
-
-    Optionally, it checks the presence of some required columns
-    and exits in case of missing columns.
-
-    :param filename: name of the input file
-    :type filename: str
-    :param required_columns: list of names of required columns
-    :type required_columns: list[str] or None
-    :return: the loaded dataframe
-    :rtype: pd.DataFrame
-    """
-    import pandas as pd
-    input_df = pd.read_csv(filename, delimiter='\t', encoding='utf-8')
-    input_df.fillna('', inplace=True)
-    for col_name in required_columns:
-        assert_column(filename, input_df, col_name)
-
-    return input_df
-
-
 def load_dtj(infile):
     """
     Load the document-terms JSON file format.
