@@ -12,10 +12,13 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.key_binding.key_processor import KeyPressEvent
 from prompt_toolkit.layout import Dimension, Window, Layout
-from prompt_toolkit.layout.containers import Container, VSplit, HSplit
+from prompt_toolkit.layout.containers import Container, VSplit, HSplit, FloatContainer, \
+    Float
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.lexers import Lexer
-from prompt_toolkit.widgets import TextArea, Frame
+from prompt_toolkit.widgets import TextArea, Frame, Dialog, Button
+from prompt_toolkit.widgets import Label as PT_Label
+from prompt_toolkit.filters import Condition
 
 from terms import Label, TermList, Term
 from utils import setup_logger, substring_index
@@ -410,7 +413,23 @@ class Gui:
         self._stats_win = None
         self._create_windows(width, term_rows, rows, review)
         self._review = review
-        self._body = VSplit(
+        help_text = []
+        for label in Label:
+            help_text.append(('', ' '.join([label.key, label.label_name, '\n'])))
+
+        # help_text = ['k keyword', 'r relevant', 'x not relevant',
+        #              'a autonoise', 'b barrier', 'p pospone',
+        help_text.extend([('', 'w save immediately\n'),
+                          ('', 'q quit\n'), ('', '\n'),
+                          ('red', 'Press any key to close')])
+        help_width = max([len(h[1]) for h in help_text])
+        help_label = PT_Label(text=help_text,
+                              dont_extend_height=True)
+        dialog = Dialog(title='Help',
+                        body=cast('Container', help_label),
+                        buttons=[], width=help_width + 5)
+        self._help = Float(content=cast('Container', dialog))
+        self._body = FloatContainer(content=VSplit(
             [
                 HSplit([
                     cast('Container', self._class_win),
@@ -421,11 +440,24 @@ class Gui:
                     cast('Container', self._word_win)
                 ])
             ]
-        )
+        ), floats=[])
+        self._help_shown = False
+
+    def show_help(self):
+        self._body.floats.append(self._help)
+        self._help_shown = True
+
+    def hide_help(self):
+        self._body.floats.remove(self._help)
+        self._help_shown = False
 
     @property
     def body(self):
         return self._body
+
+    @property
+    def help_shown(self):
+        return self._help_shown
 
     def _create_windows(self, win_width, term_rows, rows, review):
         """
@@ -636,6 +668,7 @@ class Fawoc:
         :param handler: function to be call
         :type handler: Callable[[KeyPressEvent], None]
         """
+        filt = Condition(lambda: not self.gui.help_shown)
         for k in keys:
             if len(k) == 1:
                 if k.islower():
@@ -643,9 +676,9 @@ class Fawoc:
                 else:
                     other = k.lower()
 
-                self.keybindings.add(other)(handler)
+                self.keybindings.add(other, filter=filt)(handler)
 
-            self.keybindings.add(k)(handler)
+            self.keybindings.add(k, filter=filt)(handler)
 
     def do_autonoise(self):
         """
@@ -1071,6 +1104,10 @@ def quit_kb(event: KeyPressEvent):
     event.app.exit()
 
 
+def help_kb(event: KeyPressEvent, fawoc: Fawoc):
+    fawoc.gui.show_help()
+
+
 def fawoc_main(terms, args, review, last_reviews, logger=None, profiler=None):
     """
     Main loop
@@ -1121,6 +1158,9 @@ def fawoc_main(terms, args, review, last_reviews, logger=None, profiler=None):
     fawoc.add_key_binding(['u'], lambda e: undo_kb(e, fawoc))
     fawoc.add_key_binding(['w'], lambda e: save_kb(e, fawoc))
     fawoc.add_key_binding(['q'], quit_kb)
+    fawoc.add_key_binding(['?'], lambda e: help_kb(e, fawoc))
+    filt = Condition(lambda: fawoc.gui.help_shown)
+    fawoc.keybindings.add('<any>', filter=filt)(lambda e: fawoc.gui.hide_help())
     fawoc.app.run()
 
 
