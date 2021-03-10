@@ -329,9 +329,14 @@ class TermList:
                 except KeyError:
                     count = -1
 
+                try:
+                    term = row['term']
+                except KeyError:
+                    term = row['keyword']
+
                 item = Term(
                     index=idx,
-                    string=row['term'],
+                    string=term,
                     count=count,
                     label=label,
                     order=order,
