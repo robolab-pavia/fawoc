@@ -450,6 +450,7 @@ class TermList:
                     'related': t.related,
                 }
         if save_other_data:
+            other_data.sort(key=lambda r: r['id'])
             with open(service_tsv, 'w', newline='', encoding='utf-8') as f:
                 csv_writer = csv.DictWriter(f, other_data[0].keys(),
                                             delimiter='\t', quotechar='"',
@@ -476,7 +477,7 @@ class TermList:
         items = sorted(self.items, key=lambda t: t.index)
         path = str(Path(outfile).resolve().parent)
         with tempfile.NamedTemporaryFile('w', dir=path, prefix='.fawoc.temp.',
-                                         encoding='utf-8', delete=False) as out:
+                                         encoding='utf-8', delete=False, newline='') as out:
             writer = csv.DictWriter(out, delimiter='\t', quotechar='"',
                                     fieldnames=['id', 'term', 'label'],
                                     quoting=csv.QUOTE_MINIMAL)
