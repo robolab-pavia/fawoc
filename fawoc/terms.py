@@ -2,12 +2,13 @@ import csv
 import enum
 import json
 import pathlib
-from pathlib import Path
 import tempfile
-from dataclasses import dataclass
-import utils
 # import logging
 import time
+from dataclasses import dataclass
+from pathlib import Path
+
+from . import utils
 
 
 class Error(Exception):
