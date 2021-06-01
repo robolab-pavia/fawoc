@@ -13,17 +13,33 @@ Some statistics are provided in the user interface to have a clue about the numb
 
 The terms are sorted according to their frequency in the set of documents, which is a value that must be made available to FAWOC.
 
+## Example of usage
+
+```
+fawoc words.csv
+```
+
+The input file `terms.csv` needs to have at least one column with the header (first column) called `term`.
+
 ## Available commands and keybindings
+
+The following labels are currently supported:
 
 * k keyword
 * n noise
 * r relevant
 * x not-relevant
+* b barrier
 * p postponed
 * a autonoise
-* b barrier
+
+Other keys allow to save and quit:
+
 * w save immediately
 * q quit
+
+FAWOC automatically saves the changes on closing.
+Moreover, it autosaves the changes every 10 classified words.
 
 ## Logging
 
