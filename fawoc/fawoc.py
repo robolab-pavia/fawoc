@@ -4,25 +4,25 @@ import logging
 import os
 import pathlib
 import sys
-from typing import cast, Callable, Hashable
+import time
+from typing import cast, Hashable
 
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.document import Document
+from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.key_binding.key_processor import KeyPressEvent
 from prompt_toolkit.layout import Dimension, Window, Layout
-from prompt_toolkit.layout.containers import Container, VSplit, HSplit, FloatContainer, \
-    Float
+from prompt_toolkit.layout.containers import (Container, VSplit, HSplit,
+                                              FloatContainer, Float)
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.lexers import Lexer
-from prompt_toolkit.widgets import TextArea, Frame, Dialog, Button
-from prompt_toolkit.widgets import Label as PT_Label
-from prompt_toolkit.filters import Condition
+from prompt_toolkit.widgets import TextArea, Frame, Dialog, Label as PT_Label
 
-from terms import Label, TermList, Term
-from utils import setup_logger, substring_index
-import time
+from .terms import Label, TermList, Term
+from .utils import setup_logger, substring_index
+from .version import __version__
 
 debug_logger = setup_logger('debug_logger', 'slr-kit.log',
                             level=logging.DEBUG)
@@ -992,6 +992,8 @@ def init_argparser():
                         help='disable auto-saving; save changes at the end of the session')
     parser.add_argument('--no-profile', action='store_true', dest='no_profile',
                         help='disable profiling logging')
+    parser.add_argument('--version', '-v', action='version',
+                        version=f'%(prog)r version: {__version__}')
     wmin = 40
     wmax = 100
     wdef = 50
