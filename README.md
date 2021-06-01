@@ -15,6 +15,15 @@ The terms are sorted according to their frequency in the set of documents, which
 
 ## Available commands and keybindings
 
+* k keyword
+* n noise
+* r relevant
+* x not-relevant
+* p postponed
+* a autonoise
+* b barrier
+* w save immediately
+* q quit
 
 ## Logging
 
