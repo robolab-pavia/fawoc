@@ -417,8 +417,6 @@ class Gui:
         for label in Label:
             help_text.append(('', ' '.join([label.key, label.label_name, '\n'])))
 
-        # help_text = ['k keyword', 'r relevant', 'x not relevant',
-        #              'a autonoise', 'b barrier', 'p pospone',
         help_text.extend([('', 'w save immediately\n'),
                           ('', 'q quit\n'), ('', '\n'),
                           ('red', 'Press any key to close')])
@@ -935,9 +933,9 @@ class Fawoc:
         n_noise = self.classified.count_by_label(Label.NOISE)
         n_not_relevant = self.classified.count_by_label(Label.NOT_RELEVANT)
         n_autonoise = self.classified.count_by_label(Label.AUTONOISE)
-        n_barrier = self.classified.count_by_label(Label.BARRIER)
+        n_stopword = self.classified.count_by_label(Label.STOPWORD)
         n_completed = n_relevant + n_keywords + n_noise + n_not_relevant
-        n_completed += n_later + n_autonoise + n_barrier
+        n_completed += n_later + n_autonoise + n_stopword
         stats_strings.append(f'Total words:  {self.n_terms:7}')
 
         avg = avg_or_zero(n_completed, self.n_terms)
@@ -958,8 +956,8 @@ class Fawoc:
         avg = avg_or_zero(n_not_relevant, n_completed)
         stats_strings.append(f'Not relevant: {n_not_relevant:7} ({avg:6.2f}%)')
 
-        avg = avg_or_zero(n_barrier, n_completed)
-        stats_strings.append(f'Barrier:      {n_barrier:7} ({avg:6.2f}%)')
+        avg = avg_or_zero(n_stopword, n_completed)
+        stats_strings.append(f'Stopwords:      {n_stopword:7} ({avg:6.2f}%)')
 
         avg = avg_or_zero(n_later, n_completed)
         stats_strings.append(f'Postponed:    {n_later:7} ({avg:6.2f}%)')
@@ -1151,7 +1149,7 @@ def fawoc_main(terms, args, review, last_reviews, logger=None, profiler=None):
         Label.NOT_RELEVANT.key,
         Label.NOISE.key,
         Label.RELEVANT.key,
-        Label.BARRIER.key,
+        Label.STOPWORD.key,
     ]
 
     fawoc.add_key_binding(classifing_keys, lambda e: classify_kb(e, fawoc))

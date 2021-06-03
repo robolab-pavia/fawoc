@@ -29,7 +29,7 @@ The following labels are currently supported:
 * n noise
 * r relevant
 * x not-relevant
-* b barrier
+* s stopword
 * p postponed
 * a autonoise
 
