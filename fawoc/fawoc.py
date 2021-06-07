@@ -20,12 +20,11 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.widgets import TextArea, Frame, Dialog, Label as PT_Label
 
+from fawoc import argumentParser
 from .terms import Label, TermList, Term
 from .utils import setup_logger, substring_index
 from .version import __version__
 
-debug_logger = setup_logger('debug_logger', 'slr-kit.log',
-                            level=logging.DEBUG)
 
 DEBUG = False
 # number of classification before an actual save
@@ -979,15 +978,18 @@ def init_argparser():
     :return: the command line parser
     :rtype: argparse.ArgumentParser
     """
-    parser = argparse.ArgumentParser()
+    parser = argumentParser.ArgParse()
     parser.add_argument('datafile', action="store", type=str,
-                        help="input CSV data file")
+                        help="input CSV data file", suggest_suffix='terms.csv')
     parser.add_argument('--input', '-i', metavar='LABEL',
-                        help='input only the terms classified with the specified label')
+                        help='input only the terms classified with the '
+                             'specified label')
     parser.add_argument('--dry-run', action='store_true', dest='dry_run',
                         help='do not write the results on exit')
-    parser.add_argument('--no-auto-save', action='store_true', dest='no_auto_save',
-                        help='disable auto-saving; save changes at the end of the session')
+    parser.add_argument('--no-auto-save', action='store_true',
+                        dest='no_auto_save',
+                        help='disable auto-saving; save changes at the end of '
+                             'the session')
     parser.add_argument('--no-profile', action='store_true', dest='no_profile',
                         help='disable profiling logging')
     parser.add_argument('--version', '-v', action='version',
@@ -1012,6 +1014,13 @@ def init_argparser():
 Must be in range [{wmin}, {wmax}]. Default {wdef} columns"""
     parser.add_argument('--width', '-w', action='store', type=check_width,
                         help=help_msg, default=wdef)
+    parser.add_argument('--logfile', action='store', default='slrkit.log',
+                        help='Log file name. Default %(default)r',
+                        logfile=True)
+    parser.add_argument('--profiler-name', action='store',
+                        default='profiler.log',
+                        help='Profiler log file name. Default %(default)r',
+                        logfile=True, non_standard=True)
     return parser
 
 
@@ -1176,8 +1185,10 @@ def main():
     else:
         profile_log_level = logging.INFO
 
-    profiler_logger = setup_logger('profiler_logger', 'profiler.log',
+    profiler_logger = setup_logger('profiler_logger', args.profiler_name,
                                    level=profile_log_level)
+    debug_logger = setup_logger('debug_logger', args.logfile,
+                                level=logging.DEBUG)
 
     if args.input is not None:
         try:
