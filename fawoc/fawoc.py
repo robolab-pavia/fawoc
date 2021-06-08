@@ -725,7 +725,7 @@ class Fawoc:
         :param label: label to use to classify the term
         :type label: Label
         """
-        debug_logger.debug("do_classify {} {}".format(self.evaluated_word, label))
+        self.logger.debug("do_classify {} {}".format(self.evaluated_word, label))
         if self.evaluated_word is None:
             return
 
@@ -740,7 +740,7 @@ class Fawoc:
         del self.to_classify.items[0]
         self.related_count -= 1
         t1 = time.time()
-        debug_logger.debug("do_classify time 0 {}".format(t1 - t0))
+        self.logger.debug("do_classify time 0 {}".format(t1 - t0))
 
         t0 = time.time()
         if self.related_count < 0:
@@ -758,7 +758,7 @@ class Fawoc:
             self.sort_word_key = ''
 
         t1 = time.time()
-        debug_logger.debug("do_classify time 1 {}".format(t1 - t0))
+        self.logger.debug("do_classify time 1 {}".format(t1 - t0))
 
         t0 = time.time()
         self.last_word = self.evaluated_word
@@ -769,7 +769,7 @@ class Fawoc:
                                 self.postponed, self.last_word,
                                 self.sort_word_key, stats)
         t1 = time.time()
-        debug_logger.debug("do_classify time 2 {}".format(t1 - t0))
+        self.logger.debug("do_classify time 2 {}".format(t1 - t0))
 
         t0 = time.time()
         if not self.args.dry_run and not self.args.no_auto_save:
@@ -777,7 +777,7 @@ class Fawoc:
 
         self._get_next_word()
         t1 = time.time()
-        debug_logger.debug("do_classify time 3 {}".format(t1 - t0))
+        self.logger.debug("do_classify time 3 {}".format(t1 - t0))
 
     def do_postpone(self):
         """
