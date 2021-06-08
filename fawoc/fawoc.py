@@ -1173,13 +1173,7 @@ def fawoc_main(terms, args, review, last_reviews, logger=None, profiler=None):
     fawoc.app.run()
 
 
-def main():
-    """
-    Main function
-    """
-    parser = init_argparser()
-    args = parser.parse_args()
-
+def fawoc_run(args):
     if args.no_profile:
         profile_log_level = logging.CRITICAL
     else:
@@ -1259,6 +1253,15 @@ def main():
     if not args.dry_run:
         terms.to_tsv(args.datafile)
         terms.save_service_data(args.datafile)
+
+
+def main():
+    """
+    Main function
+    """
+    parser = init_argparser()
+    args = parser.parse_args()
+    fawoc_run(args)
 
 
 if __name__ == "__main__":
