@@ -1199,6 +1199,7 @@ def main():
     else:
         review = Label.NONE
 
+    debug_logger.info("*** FAWOC STARTED ***")
     profiler_logger.info("*** PROGRAM STARTED ***")
     datafile_path = str(pathlib.Path(args.datafile).absolute())
     profiler_logger.info("DATAFILE: '{}'".format(datafile_path))
@@ -1245,6 +1246,7 @@ def main():
     profiler_logger.info("CLASSIFIED: {}".format(terms.count_classified()))
     profiler_logger.info("DATAFILE '{}'".format(datafile_path))
     profiler_logger.info("*** PROGRAM TERMINATED ***")
+    debug_logger.info("*** FAWOC TERMINATED ***")
 
     if review != Label.NONE:
         # ending review mode we must save some info
