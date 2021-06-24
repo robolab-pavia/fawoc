@@ -956,7 +956,7 @@ class Fawoc:
         stats_strings.append(f'Not relevant: {n_not_relevant:7} ({avg:6.2f}%)')
 
         avg = avg_or_zero(n_stopword, n_completed)
-        stats_strings.append(f'Stopwords:      {n_stopword:7} ({avg:6.2f}%)')
+        stats_strings.append(f'Stopwords:    {n_stopword:7} ({avg:6.2f}%)')
 
         avg = avg_or_zero(n_later, n_completed)
         stats_strings.append(f'Postponed:    {n_later:7} ({avg:6.2f}%)')
