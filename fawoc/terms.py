@@ -349,7 +349,7 @@ class TermList:
         self.items = items
         return header, items
 
-    def load_service_data(self, tsvfile):
+    def load_service_data(self, tsvfile, load_invariant=True):
         """
         Loads the service data of fawoc from the fawoc_data files
 
@@ -363,16 +363,22 @@ class TermList:
 
         :param tsvfile: path to the tsv file loaded by fawoc
         :type tsvfile: str or Path
+        :param load_invariant: if True (the default) the invariant data is
+            loaded into fawoc
+        :type load_invariant: bool
         :raise InvalidServiceDataError: if the json data is not valid
         """
         path = pathlib.Path(tsvfile)
         p = path.parent
         name = '_'.join([path.stem, 'fawoc_data.tsv'])
-        try:
-            with open(p / name, newline='', encoding='utf-8') as csv_file:
-                csv_reader = csv.DictReader(csv_file, delimiter='\t')
-                fawoc_data = {int(row['id']): row for row in csv_reader}
-        except FileNotFoundError:
+        if load_invariant:
+            try:
+                with open(p / name, newline='', encoding='utf-8') as csv_file:
+                    csv_reader = csv.DictReader(csv_file, delimiter='\t')
+                    fawoc_data = {int(row['id']): row for row in csv_reader}
+            except FileNotFoundError:
+                fawoc_data = {}
+        else:
             fawoc_data = {}
 
         name = '_'.join([path.stem, 'fawoc_data.json'])
@@ -381,11 +387,12 @@ class TermList:
                 data = json.load(file)
 
             if not isinstance(data, dict):
-                raise InvalidServiceDataError('the loaded data is not a list')
+                raise InvalidServiceDataError('the loaded data is not a dict')
 
             data = {int(k): v for k, v in data.items()}
         except FileNotFoundError:
             data = {}
+
         for t in self.items:
             # try to get data from the fawoc_data service file
             try:
@@ -420,7 +427,7 @@ class TermList:
                     s = f'{repr(t.string)} is not a dict'
                     raise InvalidServiceDataError(s)
 
-    def save_service_data(self, tsvfile):
+    def save_service_data(self, tsvfile, save_invariant=True):
         """
         Saves the service data of fawoc to the fawoc_data files
 
@@ -428,6 +435,8 @@ class TermList:
 
         :param tsvfile: path to the tsv file loaded by fawoc
         :type tsvfile: str or Path
+        :param save_invariant: if True (the default) the invariant data is saved
+        :type save_invariant: bool
         """
         file = Path(tsvfile).resolve()
         path = file.parent
@@ -435,7 +444,7 @@ class TermList:
         service_tsv = path / name
         name = '_'.join([file.stem, 'fawoc_data.json'])
         service_json = path / name
-        save_other_data = not service_tsv.exists()
+        save_other_data = save_invariant and not service_tsv.exists()
         service_data = {}
         other_data = []
         for t in self.items:
