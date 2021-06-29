@@ -990,6 +990,10 @@ def init_argparser():
                         dest='no_auto_save',
                         help='disable auto-saving; save changes at the end of '
                              'the session')
+    parser.add_argument('--no-info-file', action='store_true',
+                        dest='no_info_file',
+                        help='disable loading/saving of the file with the '
+                             'additional informations about the term.')
     parser.add_argument('--no-profile', action='store_true', dest='no_profile',
                         help='disable profiling logging')
     parser.add_argument('--version', '-v', action='version',
@@ -1201,7 +1205,7 @@ def fawoc_run(args):
     args.datafile = datafile_path
     terms = TermList()
     _, _ = terms.from_tsv(args.datafile)
-    terms.load_service_data(args.datafile)
+    terms.load_service_data(args.datafile, load_invariant=not args.no_info_file)
 
     # now order is properly loaded - sort terms by order
     terms.sort_by_order()
@@ -1252,7 +1256,8 @@ def fawoc_run(args):
 
     if not args.dry_run:
         terms.to_tsv(args.datafile)
-        terms.save_service_data(args.datafile)
+        terms.save_service_data(args.datafile,
+                                save_invariant=not args.no_info_file)
 
 
 def main():
