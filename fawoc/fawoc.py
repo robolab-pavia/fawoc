@@ -998,7 +998,8 @@ def init_argparser():
     parser.add_argument('--no-info-file', action='store_true',
                         dest='no_info_file',
                         help='disable loading/saving of the file with the '
-                             'additional informations about the term.')
+                             'additional informations about the term.',
+                        cli_only=True)
     parser.add_argument('--no-profile', action='store_true', dest='no_profile',
                         help='disable profiling logging')
     parser.add_argument('--version', '-v', action='version',
