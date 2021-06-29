@@ -393,7 +393,7 @@ class Gui:
     :type _post_win: Win or None
     """
 
-    def __init__(self, width, term_rows, rows, review):
+    def __init__(self, width, term_rows, rows, review, hide_count):
         """
         The Gui of the application
 
@@ -405,12 +405,14 @@ class Gui:
         :type rows: int
         :param review: label to review
         :type review: Label
+        :param hide_count: if True, hides the term count from the term window
+        :type hide_count: bool
         """
         self._class_win = None
         self._post_win = None
         self._word_win = None
         self._stats_win = None
-        self._create_windows(width, term_rows, rows, review)
+        self._create_windows(width, term_rows, rows, review, hide_count)
         self._review = review
         help_text = []
         for label in Label:
@@ -456,7 +458,7 @@ class Gui:
     def help_shown(self):
         return self._help_shown
 
-    def _create_windows(self, win_width, term_rows, rows, review):
+    def _create_windows(self, win_width, term_rows, rows, review, hide_count):
         """
         Creates all the windows
 
@@ -468,6 +470,8 @@ class Gui:
         :type rows: int
         :param review: label to review
         :type review: Label
+        :param hide_count: if True, hide the term count in the term window
+        :type hide_count: bool
         """
         self._class_win = Win(Label.NONE, title='Classified terms',
                               rows=term_rows, cols=win_width,
@@ -485,7 +489,8 @@ class Gui:
             title = title.format(review.label_name.capitalize())
 
         self._word_win = Win(Label.NONE, title=title, rows=term_rows,
-                             cols=win_width, show_title=True, show_count=True,
+                             cols=win_width, show_title=True,
+                             show_count=not hide_count,
                              show_header=True, highlight_first=True)
         self._stats_win = StrWin(rows=rows, cols=win_width)
 
@@ -1154,7 +1159,7 @@ def fawoc_main(terms, args, review, last_reviews, logger=None, profiler=None):
     rows = 10
     terms_rows = 28
 
-    gui = Gui(win_width, terms_rows, rows, review)
+    gui = Gui(win_width, terms_rows, rows, review, args.no_info_file)
     fawoc = Fawoc(args, terms, review, gui, profiler, logger)
 
     classifing_keys = [
