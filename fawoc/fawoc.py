@@ -20,7 +20,7 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.widgets import TextArea, Frame, Dialog, Label as PT_Label
 
-from fawoc import argumentParser
+from slrkit_utils.argument_parser import ArgParse
 from .terms import Label, TermList, Term
 from .utils import setup_logger, substring_index
 from .version import __version__
@@ -983,7 +983,7 @@ def init_argparser():
     :return: the command line parser
     :rtype: argparse.ArgumentParser
     """
-    parser = argumentParser.ArgParse()
+    parser = ArgParse()
     parser.add_argument('datafile', action="store", type=str,
                         help="input CSV data file", suggest_suffix='terms.csv')
     parser.add_argument('--input', '-i', metavar='LABEL',
