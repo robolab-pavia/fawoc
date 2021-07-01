@@ -985,7 +985,7 @@ def init_argparser():
     """
     parser = ArgParse()
     parser.add_argument('datafile', action="store", type=str,
-                        help="input CSV data file", suggest_suffix='terms.csv')
+                        help="input CSV data file")
     parser.add_argument('--input', '-i', metavar='LABEL',
                         help='input only the terms classified with the '
                              'specified label')
