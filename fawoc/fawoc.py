@@ -198,11 +198,12 @@ class Win:
         self.control = BufferControl(buffer=self.buffer,
                                      lexer=self.lexer)
 
+        # the following + 1 are to take into account an extra blank at the start
         if show_count:
-            attr_width = 6
+            attr_width = 6 + 1
             self.attr_name = 'count'
         elif show_label:
-            attr_width = 10
+            attr_width = 10 + 1
             self.attr_name = 'label'
         else:
             attr_width = 0
@@ -303,7 +304,7 @@ class Win:
         self.lexer.highlight_first = self.highlight_first
         if self.show_header:
             text = ['Term']
-            attr = [('underline', f'{self.attr_name.title()}\n')]
+            attr = [('', ' '), ('underline', f'{self.attr_name.title()}\n')]
         else:
             text = []
             attr = []
@@ -315,9 +316,9 @@ class Win:
                 text.append(w.string)
 
             if self.attr_name == 'count':
-                attr.append(('', f'{w.count}\n'))
+                attr.append(('', f' {w.count}\n'))
             else:
-                attr.append(('', f'{w.label.label_name}\n'))
+                attr.append(('', f' {w.label.label_name}\n'))
 
             # noinspection PyTypeChecker
             if len(text) >= self.height.max:
