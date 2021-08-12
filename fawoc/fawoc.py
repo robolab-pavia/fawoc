@@ -21,7 +21,7 @@ from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.widgets import TextArea, Frame, Dialog, Label as PT_Label
 
 from slrkit_utils.argument_parser import ArgParse
-from .terms import Label, TermList, Term
+from .terms import InvalidServiceDataError, Label, TermList, Term
 from .utils import setup_logger, substring_index
 from .version import __version__
 
@@ -1210,8 +1210,17 @@ def fawoc_run(args):
     # use the absolute path
     args.datafile = datafile_path
     terms = TermList()
-    _, _ = terms.from_tsv(args.datafile)
-    terms.load_service_data(args.datafile, load_invariant=not args.no_info_file)
+    try:
+        _, _ = terms.from_tsv(args.datafile)
+    except FileNotFoundError:
+        msg = 'Error: file {!r} not found'
+        sys.exit(msg.format(args.datafile))
+    try:
+        terms.load_service_data(args.datafile, load_invariant=not args.no_info_file)
+    except InvalidServiceDataError as err:
+        msg = 'Error: service file {!r} is invalid: {}'
+        name = '_'.join([pathlib.Path(args.datafile).stem, 'fawoc_data.json'])
+        sys.exit(msg.format(name, err.args[0]))
 
     # now order is properly loaded - sort terms by order
     terms.sort_by_order()

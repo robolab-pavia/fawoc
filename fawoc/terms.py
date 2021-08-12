@@ -408,23 +408,23 @@ class TermList:
                         if isinstance(d['order'], int):
                             t.order = d['order']
                         else:
-                            s = f"'order' field of the {t.string} entry is not an int"
+                            s = f"'order' field of the {t.index} entry is not an int"
                             raise InvalidServiceDataError(s)
 
                         if isinstance(d['related'], str):
                             t.related = d['related']
                         else:
-                            s = f"'related' field of the {t.string} entry is not a str"
+                            s = f"'related' field of the {t.index} entry is not a str"
                             raise InvalidServiceDataError(s)
                     else:
                         t.order = -1
                         t.related = ''
 
                 except KeyError as ke:
-                    s = f'Missing {repr(ke.args[0])} in {repr(t.string)} entry'
+                    s = f'Missing {repr(ke.args[0])} in {repr(t.index)} entry'
                     raise InvalidServiceDataError(s)
                 except TypeError:
-                    s = f'{repr(t.string)} is not a dict'
+                    s = f'Entry {repr(t.index)} is not a dict'
                     raise InvalidServiceDataError(s)
 
     def save_service_data(self, tsvfile, save_invariant=True):
