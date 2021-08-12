@@ -1216,6 +1216,15 @@ def fawoc_run(args):
     except FileNotFoundError:
         msg = 'Error: file {!r} not found'
         sys.exit(msg.format(args.datafile))
+    except KeyError as err:
+        if err.args[0] == 'keyword':
+            msg = 'Error: file {!r} has not a term nor a keyword column'
+            sys.exit(msg.format(args.datafile))
+        else:
+            # probably this else is unreachable, but in any case is better to
+            # re-raise this exception for debug
+            raise
+
     try:
         terms.load_service_data(args.datafile, load_invariant=not args.no_info_file)
     except InvalidServiceDataError as err:
