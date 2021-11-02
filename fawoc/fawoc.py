@@ -607,7 +607,8 @@ class Fawoc:
         self.args = args
         self.gui = gui
         self.terms = terms
-        self.n_terms = len(terms)
+        self.review = review
+
         last_word = terms.get_last_classified_term()
         self.postponed = terms.get_from_label(Label.POSTPONED)
         if last_word is None:
@@ -637,8 +638,12 @@ class Fawoc:
 
         self.classified = cls - self.postponed
 
+        if review == Label.NONE:
+            self.n_terms = len(terms)
+        else:
+            self.n_terms = len(terms.get_from_label(review)) + len(cls)
+
         self._get_next_word()
-        self.review = review
         self.related_count = related
         if related > 0:
             self.sort_word_key = sort_key
@@ -1138,7 +1143,8 @@ def fawoc_main(terms, args, review, last_reviews, logger=None, profiler=None):
     :type args: argparse.Namespace
     :param review: label to review if any
     :type review: Label
-    :param last_reviews: last reviews performed. key: csv abs path; val: reviewed label name
+    :param last_reviews: last reviews performed. key: csv abs path; val: reviewed
+        label name
     :type last_reviews: dict[str, str]
     :param logger: debug logger. Default: None
     :type logger: logging.Logger or None
