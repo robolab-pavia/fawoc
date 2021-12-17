@@ -706,7 +706,7 @@ class Fawoc:
             t.related = self.sort_word_key
             t.order = self.last_classified_order
             auto.append(t.string)
-            msg = f"WORD '{t.string}' labeled as {Label.AUTONOISE.label_name}"
+            msg = f"WORD '{t.string}' AS '{Label.AUTONOISE.label_name}'"
             self.profiler.info(msg)
             self.classified.items.append(t)
 
