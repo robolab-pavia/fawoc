@@ -1,2 +1,2 @@
 prompt_toolkit
-git+https://github.com/robolab-pavia/slr-kit-utils.git
+slr-kit-utils
