@@ -21,22 +21,39 @@ fawoc terms.csv
 
 The input file `terms.csv` needs to have at least one column with the header (first column) called `term`.
 
-## Available commands and keybindings
+## Labels
 
-The following labels are currently supported:
+The supported labels are the following:
 
-* k keyword
-* n noise
-* r relevant
-* x not-relevant
-* s stopword
-* p postponed
-* a autonoise
+* `relevant`: the term is relevant for a topic, but it may not significantly contributes to its characterization
+* `keyword`: the term is a keyword and thus significantly contributes to the characterization of a topic
+* `noise`: the term is a common word that does not contribute to the characterization of a topic
+* `not-relevant`: the term originates from a document that should not belong to the set of relevant documents (typically due to a false positive in the query)
+* `stopword`: the term should have been considered a stopword
+* `postponed`: the term will be classified later (usually to continue the classification in presence of terms that may require more attention to be classified)
+* `autonoise`: same as `noise`, but it was classified using the _autonoise_ function (see the section below)
 
-Other keys allow to save and quit:
+## Commands and keybindings
 
-* w save immediately
-* q quit
+The following keybindings are associated to the availabe labels:
+
+* `r` relevant
+* `k` keyword
+* `n` noise
+* `x` not-relevant
+* `s` stopword
+* `p` postponed
+* `a` autonoise
+
+The _autonoise_ function automatically classifies as `autonoise` all the remaining terms having the same number of "grams" as the current term.
+E.g., if you are classifying the bi-grams related to a given word, the autonoise function will mark as `autonoise` all the remaining bi-grams, and will present the first tri-gram for classification.
+This is useful when it appears clear that the terms start to become rare or have some common pattern that allow to identify them as noise in a batch.
+
+Other keys allow to save, undo or quit:
+
+* `u` undo the last change
+* `w` save immediately
+* `q` quit
 
 FAWOC automatically saves the changes on closing.
 Moreover, it autosaves the changes every 10 classified words.
