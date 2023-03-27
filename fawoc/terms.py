@@ -1,9 +1,8 @@
 import csv
-import enum
 import json
 import pathlib
 import tempfile
-# import logging
+import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,7 +23,7 @@ class InvalidServiceDataError(Error):
 #                            level=logging.DEBUG)
 
 
-class Label(enum.Enum):
+class LabelClass():
     """
     Label for a classified term.
 
@@ -40,19 +39,25 @@ class Label(enum.Enum):
     :type name: str
     :type key: str
     """
-    NONE = ('', '')
-    KEYWORD = ('keyword', 'k')
-    NOISE = ('noise', 'n')
-    RELEVANT = ('relevant', 'r')
-    NOT_RELEVANT = ('not-relevant', 'x')
-    POSTPONED = ('postponed', 'p')
-    AUTONOISE = ('autonoise', 'a')
-    STOPWORD = ('stopword', 's')
+    def __init__(self):
+        self.service_labels = {
+                'NONE': ('', ''),
+                'AUTONOISE': ('autonoise', 'a'),
+                'POSTPONED': ('postponed', 'p')
+        }
+        self.classifying_labels = {
+                'KEYWORD': ('keyword', 'k'),
+                'NOISE': ('noise', 'n'),
+                'RELEVANT': ('relevant', 'r'),
+                'NOT_RELEVANT': ('not-relevant', 'x'),
+                'STOPWORD': ('stopword', 's'),
+        }
+        self.labels = self.service_labels
+        self.labels.update(self.classifying_labels)
 
-    @staticmethod
-    def get_from_key(key):
+    def get_from_keybinding(self, keybinding):
         """
-        Searches the Label associated with a specified key
+        Searches the Label associated with a specified keybinding
 
         :param key: the associated to the Label
         :type key: str
@@ -60,14 +65,12 @@ class Label(enum.Enum):
         :rtype: Label
         :raise ValueError: if key is not a valid key
         """
-        for label in Label:
-            if label.key == key:
-                return label
+        for label in self.labels:
+            if self.labels[label][1] == keybinding:
+                return self.labels[label]
+        raise ValueError(f'"{keybinding}" is not a valid key')
 
-        raise ValueError('"{}" is not a valid key'.format(key))
-
-    @staticmethod
-    def get_from_name(name):
+    def get_from_name(self, name):
         """
         Searches the Label associated with a specified name
 
@@ -77,25 +80,24 @@ class Label(enum.Enum):
         :rtype: Label
         :raise ValueError: if name is not a valid name
         """
-        for label in Label:
-            if label.label_name == name:
-                return label
+        for label in self.labels:
+            if self.labels[label][0] == name:
+                return self.labels[label]
 
         raise ValueError('"{}" is not a valid label name'.format(name))
 
-    def __init__(self, name, key):
-        """
-        Creates Label and sets its name and key
+    def get_classifying_keys(self):
+        keys = [self.classifying_labels[label][1] for label in self.classifying_labels]
+        return keys
 
-        It is meant to be used by the internals of Enum. Using it directly will
-        probably result in an Exception
-        :param name: name of the label
-        :type name: str
-        :param key: key associated to the label
-        :type key: str
-        """
-        self.label_name = name
-        self.key = key
+    def get_label_name(self, key):
+        return self.labels[key][0]
+
+    def get_label_keybinding(self, key):
+        return self.labels[key][1]
+
+
+Label = LabelClass()
 
 
 @dataclass
@@ -114,7 +116,7 @@ class Term:
         :return: True if the Term is classified, False otherwise
         :rtype: bool
         """
-        return self.label != Label.NONE
+        return self.label != Label.labels['NONE']
 
 
 class TermList:
@@ -252,11 +254,10 @@ class TermList:
         :return: a TermList containing the Terms classified with the labels
         :rtype: TermList
         """
-        if isinstance(label, Label):
+        if isinstance(label, tuple):
             label = [label]
         elif not isinstance(label, (list, tuple)):
             raise TypeError('label has wrong type {}'.format(type(label)))
-
         # debug_logger.debug("--- len {}".format(len(self.items)))
         items = []
         for t in self.items:
@@ -267,7 +268,6 @@ class TermList:
                     items.append(t)
                 elif not order_set and t.order < 0:
                     items.append(t)
-
         return TermList(items)
 
     def get_not_classified(self):
@@ -277,7 +277,7 @@ class TermList:
         :return: a TermList containing the Terms not classified
         :rtype: TermList
         """
-        items = [t for t in self.items if not t.label != Label.NONE]
+        items = [t for t in self.items if not t.label != Label.labels['NONE']]
         return TermList(items)
 
     def get_classified(self):
@@ -287,7 +287,7 @@ class TermList:
         :return: a TermList containing the Terms classified
         :rtype: TermList
         """
-        items = [t for t in self.items if t.label != Label.NONE]
+        items = [t for t in self.items if t.label != Label.labels['NONE']]
         return TermList(items)
 
     def from_tsv(self, infile):
@@ -496,7 +496,7 @@ class TermList:
                 item = {
                     'id': w.index,
                     'term': w.string,
-                    'label': w.label.label_name,
+                    'label': w.label[0],
                 }
                 writer.writerow(item)
 
@@ -569,7 +569,7 @@ class TermList:
 
         return self
 
-    def return_related_items(self, key, label=Label.NONE):
+    def return_related_items(self, key, label=Label.labels['NONE']):
         """
         Searches related items in self and returns the resulting partition
 

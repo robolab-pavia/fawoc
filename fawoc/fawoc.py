@@ -318,7 +318,7 @@ class Win:
             if self.attr_name == 'count':
                 attr.append(('', f' {w.count}\n'))
             else:
-                attr.append(('', f' {w.label.label_name}\n'))
+                attr.append(('', f' {w.label[0]}\n'))
 
             # noinspection PyTypeChecker
             if len(text) >= self.height.max:
@@ -416,8 +416,9 @@ class Gui:
         self._create_windows(width, term_rows, rows, review, hide_count)
         self._review = review
         help_text = []
-        for label in Label:
-            help_text.append(('', ' '.join([label.key, label.label_name, '\n'])))
+        for label in Label.labels:
+            l = Label.labels[label]
+            help_text.append(('', ' '.join([l[1], l[0], '\n'])))
 
         help_text.extend([('', 'w save immediately\n'),
                           ('', 'q quit\n'), ('', '\n'),
@@ -474,22 +475,22 @@ class Gui:
         :param hide_count: if True, hide the term count in the term window
         :type hide_count: bool
         """
-        self._class_win = Win(Label.NONE, title='Classified terms',
+        self._class_win = Win(Label.labels['NONE'], title='Classified terms',
                               rows=term_rows, cols=win_width,
                               show_title=True, show_label=True,
                               show_header=True)
-        title = Label.POSTPONED.label_name.capitalize()
-        self._post_win = Win(Label.POSTPONED, title=title, rows=rows,
+        title = Label.labels['POSTPONED'][0].capitalize()
+        self._post_win = Win(Label.labels['POSTPONED'], title=title, rows=rows,
                              cols=win_width,
                              show_title=True)
 
         title = 'Input label: {}'
-        if review == Label.NONE:
+        if review == Label.labels['NONE']:
             title = title.format('None')
         else:
-            title = title.format(review.label_name.capitalize())
+            title = title.format(review[0].capitalize())
 
-        self._word_win = Win(Label.NONE, title=title, rows=term_rows,
+        self._word_win = Win(Label.labels['NONE'], title=title, rows=term_rows,
                              cols=win_width, show_title=True,
                              show_count=not hide_count,
                              show_header=True, highlight_first=True)
@@ -504,7 +505,7 @@ class Gui:
         :param label: label of the window that has to highlight the term
         :type label: Label
         """
-        if label == Label.POSTPONED:
+        if label == Label.labels['POSTPONED']:
             self._post_win.display_lines(rev=True,
                                          highlight_word=term_to_highlight,
                                          whole_line=True, color='ffff00')
@@ -565,7 +566,7 @@ class Gui:
             self.refresh_label_windows(term_to_highlight.string,
                                        term_to_highlight.label)
         else:
-            self.refresh_label_windows('', Label.NONE)
+            self.refresh_label_windows('', Label.labels['NONE'])
 
         self.set_stats(stats_str)
 
@@ -610,12 +611,12 @@ class Fawoc:
         self.review = review
 
         last_word = terms.get_last_classified_term()
-        self.postponed = terms.get_from_label(Label.POSTPONED)
+        self.postponed = terms.get_from_label(Label.labels['POSTPONED'])
         if last_word is None:
             self.last_classified_order = -1
             related = 0
             sort_key = ''
-            if review == Label.NONE:
+            if review == Label.labels['NONE']:
                 self.to_classify = terms.get_not_classified()
             else:
                 self.to_classify = terms.get_from_label(review, order_set=False)
@@ -623,7 +624,7 @@ class Fawoc:
         else:
             self.last_classified_order = last_word.order
             sort_key = last_word.related
-            if sort_key == '' and last_word.label != Label.POSTPONED:
+            if sort_key == '' and last_word.label != Label.labels['POSTPONED']:
                 sort_key = last_word.string
 
             cont, not_cont = terms.return_related_items(sort_key, label=review)
@@ -631,14 +632,14 @@ class Fawoc:
             self.to_classify = cont + not_cont
 
         cls = terms.get_classified()
-        if review != Label.NONE:
-            self.postponed = terms.get_from_label(Label.POSTPONED,
+        if review != Label.labels['NONE']:
+            self.postponed = terms.get_from_label(Label.labels['POSTPONED'],
                                                   order_set=True)
             cls = TermList([t for t in cls.items if t.order >= 0])
 
         self.classified = cls - self.postponed
 
-        if review == Label.NONE:
+        if review == Label.labels['NONE']:
             self.n_terms = len(terms)
         else:
             self.n_terms = len(terms.get_from_label(review)) + len(cls)
@@ -655,7 +656,7 @@ class Fawoc:
         self.logger = logger
         self.gui.assign_labeled_terms(self.classified, self.postponed)
         if self.last_word is None:
-            self.gui.refresh_label_windows('', Label.NONE)
+            self.gui.refresh_label_windows('', Label.labels['NONE'])
         else:
             self.gui.refresh_label_windows(self.last_word.string,
                                            self.last_word.label)
@@ -701,12 +702,12 @@ class Fawoc:
             if len(t.string.split()) != n:
                 break
 
-            t.label = Label.AUTONOISE
+            t.label = Label.labels['AUTONOISE']
             self.last_classified_order += 1
             t.related = self.sort_word_key
             t.order = self.last_classified_order
             auto.append(t.string)
-            msg = f"WORD '{t.string}' AS '{Label.AUTONOISE.label_name}'"
+            msg = f"WORD \'{t.string}\' AS \'{Label.labels['AUTONOISE']}\'"
             self.profiler.info(msg)
             self.classified.items.append(t)
 
@@ -742,7 +743,7 @@ class Fawoc:
 
         t0 = time.time()
         self.profiler.info("WORD '{}' AS '{}'".format(self.evaluated_word.string,
-                                                      label.label_name))
+                                                      label[0]))
 
         self.evaluated_word.label = label
         self.last_classified_order += 1
@@ -800,7 +801,7 @@ class Fawoc:
         msg = "WORD '{}' POSTPONED".format(self.evaluated_word.string)
         self.profiler.info(msg)
         # classification: POSTPONED
-        self.evaluated_word.label = Label.POSTPONED
+        self.evaluated_word.label = Label.labels['POSTPONED']
         self.last_classified_order += 1
         self.evaluated_word.order = self.last_classified_order
         self.evaluated_word.related = self.sort_word_key
@@ -846,9 +847,9 @@ class Fawoc:
             return
 
         label = self.last_word.label
-        if label == Label.AUTONOISE:
+        if label == Label.labels['AUTONOISE']:
             for t in reversed(list(self.classified.items)):
-                if t.label == Label.AUTONOISE:
+                if t.label == Label.labels['AUTONOISE']:
                     self._undo_single()
                 else:
                     break
@@ -879,7 +880,7 @@ class Fawoc:
                                                   self.last_word.order)
         self.logger.debug(msg)
 
-        if label == Label.POSTPONED:
+        if label == Label.labels['POSTPONED']:
             self.postponed.remove([self.last_word.string])
         else:
             self.classified.remove([self.last_word.string])
@@ -938,12 +939,12 @@ class Fawoc:
         """
         stats_strings = []
         n_later = len(self.postponed)
-        n_keywords = self.classified.count_by_label(Label.KEYWORD)
-        n_relevant = self.classified.count_by_label(Label.RELEVANT)
-        n_noise = self.classified.count_by_label(Label.NOISE)
-        n_not_relevant = self.classified.count_by_label(Label.NOT_RELEVANT)
-        n_autonoise = self.classified.count_by_label(Label.AUTONOISE)
-        n_stopword = self.classified.count_by_label(Label.STOPWORD)
+        n_keywords = self.classified.count_by_label(Label.labels['KEYWORD'])
+        n_relevant = self.classified.count_by_label(Label.labels['RELEVANT'])
+        n_noise = self.classified.count_by_label(Label.labels['NOISE'])
+        n_not_relevant = self.classified.count_by_label(Label.labels['NOT_RELEVANT'])
+        n_autonoise = self.classified.count_by_label(Label.labels['AUTONOISE'])
+        n_stopword = self.classified.count_by_label(Label.labels['STOPWORD'])
         n_completed = n_relevant + n_keywords + n_noise + n_not_relevant
         n_completed += n_later + n_autonoise + n_stopword
         stats_strings.append(f'Total words:  {self.n_terms:7}')
@@ -1082,7 +1083,7 @@ def classify_kb(event: KeyPressEvent, fawoc: Fawoc):
     :param fawoc: fawoc object
     :type fawoc: Fawoc
     """
-    label = Label.get_from_key(event.data.lower())
+    label = Label.get_from_keybinding(event.data.lower())
     fawoc.do_classify(label)
 
 
@@ -1157,9 +1158,9 @@ def fawoc_main(terms, args, review, last_reviews, logger=None, profiler=None):
     """
     datafile = args.datafile
     reset = False
-    if review != Label.NONE:
+    if review != Label.labels['NONE']:
         # review mode: check last_reviews
-        if review.label_name != last_reviews.get(datafile, ''):
+        if review[0] != last_reviews.get(datafile, ''):
             reset = True
 
         if reset:
@@ -1174,13 +1175,7 @@ def fawoc_main(terms, args, review, last_reviews, logger=None, profiler=None):
     gui = Gui(win_width, terms_rows, rows, review, args.no_info_file)
     fawoc = Fawoc(args, terms, review, gui, profiler, logger)
 
-    classifing_keys = [
-        Label.KEYWORD.key,
-        Label.NOT_RELEVANT.key,
-        Label.NOISE.key,
-        Label.RELEVANT.key,
-        Label.STOPWORD.key,
-    ]
+    classifing_keys = Label.get_classifying_keys()
 
     fawoc.add_key_binding(classifing_keys, lambda e: classify_kb(e, fawoc))
     fawoc.add_key_binding(['a'], lambda e: autonoise_kb(e, fawoc))
@@ -1202,6 +1197,7 @@ def fawoc_run(args):
 
     profiler_logger = setup_logger('profiler_logger', args.profiler_name,
                                    level=profile_log_level)
+    global debug_logger
     debug_logger = setup_logger('debug_logger', args.logfile,
                                 level=logging.DEBUG)
 
@@ -1212,7 +1208,7 @@ def fawoc_run(args):
             debug_logger.error('{} is not a valid label'.format(args.input))
             sys.exit('Error: {} is not a valid label'.format(args.input))
     else:
-        review = Label.NONE
+        review = Label.labels['NONE']
 
     debug_logger.info("*** FAWOC STARTED ***")
     profiler_logger.info("*** PROGRAM STARTED ***")
@@ -1254,8 +1250,8 @@ def fawoc_run(args):
         # no file to care about
         last_reviews = dict()
 
-    if review != Label.NONE:
-        label = review.label_name
+    if review != Label.labels['NONE']:
+        label = review[0]
     else:
         label = 'NONE'
         if datafile_path in last_reviews:
@@ -1281,9 +1277,9 @@ def fawoc_run(args):
     profiler_logger.info("*** PROGRAM TERMINATED ***")
     debug_logger.info("*** FAWOC TERMINATED ***")
 
-    if review != Label.NONE:
+    if review != Label.labels['NONE']:
         # ending review mode we must save some info
-        last_reviews[datafile_path] = review.label_name
+        last_reviews[datafile_path] = review[0]
 
     if len(last_reviews) > 0:
         with open('last_review.json', 'w') as fout:
