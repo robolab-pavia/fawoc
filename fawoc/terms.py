@@ -8,7 +8,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import utils
+import utils
 
 
 class Error(Exception):

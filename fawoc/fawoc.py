@@ -21,9 +21,9 @@ from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.widgets import TextArea, Frame, Dialog, Label as PT_Label
 
 from slrkit_utils.argument_parser import ArgParse
-from .terms import InvalidServiceDataError, Label, TermList, Term
-from .utils import setup_logger, substring_index
-from .version import __version__
+from terms import InvalidServiceDataError, Label, TermList, Term
+from utils import setup_logger, substring_index
+from version import __version__
 
 
 DEBUG = False
