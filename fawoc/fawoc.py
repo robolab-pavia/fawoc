@@ -951,6 +951,10 @@ class Fawoc:
         avg = avg_or_zero(n_completed, self.n_terms)
         stats_strings.append(f'Completed:    {n_completed:7} ({avg:6.2f}%)')
 
+        n_to_do = self.n_terms - n_completed
+        avg = avg_or_zero(n_to_do, self.n_terms)
+        stats_strings.append(f'To do:        {n_to_do:7} ({avg:6.2f}%)')
+
         avg = avg_or_zero(n_keywords, n_completed)
         stats_strings.append(f'Keywords:     {n_keywords:7} ({avg:6.2f}%)')
 
