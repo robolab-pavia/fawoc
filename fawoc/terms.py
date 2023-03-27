@@ -19,8 +19,8 @@ class Error(Exception):
 class InvalidServiceDataError(Error):
     pass
 
-# debug_logger = utils.setup_logger('debug_logger', 'slr-kit.log',
-#                            level=logging.DEBUG)
+debug_logger = utils.setup_logger('debug_logger', 'slr-kit.log',
+        level=logging.DEBUG)
 
 
 class LabelClass():
@@ -47,13 +47,14 @@ class LabelClass():
         }
         self.classifying_labels = {
                 'KEYWORD': ('keyword', 'k'),
-                'NOISE': ('noise', 'n'),
                 'RELEVANT': ('relevant', 'r'),
+                'NOISE': ('noise', 'n'),
+                'GARBAGE': ('garbage', 'g'),
                 'NOT_RELEVANT': ('not-relevant', 'x'),
                 'STOPWORD': ('stopword', 's'),
         }
-        self.labels = self.service_labels
-        self.labels.update(self.classifying_labels)
+        self.labels = self.classifying_labels
+        self.labels.update(self.service_labels)
 
     def get_from_keybinding(self, keybinding):
         """
@@ -86,7 +87,7 @@ class LabelClass():
 
         raise ValueError('"{}" is not a valid label name'.format(name))
 
-    def get_classifying_keys(self):
+    def get_classifying_keybindings(self):
         keys = [self.classifying_labels[label][1] for label in self.classifying_labels]
         return keys
 
@@ -624,6 +625,16 @@ class TermList:
         :rtype: int
         """
         return len(self.get_from_label(label))
+
+    def count_labels(self):
+        """Counts all the labels used for the items."""
+        count = {Label.labels[lab][0]: 0 for lab in Label.labels}
+        for item in self.items:
+            lab = item.label[0]
+            count[lab] += 1
+        # removes the NONE 'empty' label
+        count.pop('', None)
+        return count
 
     def get_labels(self):
         """

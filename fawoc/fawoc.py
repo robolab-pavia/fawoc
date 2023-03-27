@@ -684,10 +684,8 @@ class Fawoc:
                     other = k.upper()
                 else:
                     other = k.lower()
-
                 self.keybindings.add(other, filter=filt)(handler)
-
-            self.keybindings.add(k, filter=filt)(handler)
+                self.keybindings.add(k, filter=filt)(handler)
 
     def do_autonoise(self):
         """
@@ -938,46 +936,54 @@ class Fawoc:
         :rtype: list[str]
         """
         stats_strings = []
-        n_later = len(self.postponed)
-        n_keywords = self.classified.count_by_label(Label.labels['KEYWORD'])
-        n_relevant = self.classified.count_by_label(Label.labels['RELEVANT'])
-        n_noise = self.classified.count_by_label(Label.labels['NOISE'])
-        n_not_relevant = self.classified.count_by_label(Label.labels['NOT_RELEVANT'])
-        n_autonoise = self.classified.count_by_label(Label.labels['AUTONOISE'])
-        n_stopword = self.classified.count_by_label(Label.labels['STOPWORD'])
-        n_completed = n_relevant + n_keywords + n_noise + n_not_relevant
-        n_completed += n_later + n_autonoise + n_stopword
-        stats_strings.append(f'Total words:  {self.n_terms:7}')
+        n_to_do = len(self.to_classify)
+        count = self.classified.count_labels()
+        n_completed = sum(count.values())
 
+        # TODO: this should be done only once at initialization
+        my_labels = ['Total words', 'To do', 'Related']
+        label_labels = [Label.labels[lab][0] for lab in Label.labels]
+        label_labels = [x for x in label_labels if x != '']
+        all_labels = my_labels + label_labels
+        max_len = max(len(x) for x in all_labels)
+
+        stats_strings.append(f'Total words       {self.n_terms:7}')
         avg = avg_or_zero(n_completed, self.n_terms)
-        stats_strings.append(f'Completed:    {n_completed:7} ({avg:6.2f}%)')
-
-        n_to_do = self.n_terms - n_completed
+        stats_strings.append(f'Completed         {n_completed:7} ({avg:6.2f}%)')
         avg = avg_or_zero(n_to_do, self.n_terms)
-        stats_strings.append(f'To do:        {n_to_do:7} ({avg:6.2f}%)')
+        stats_strings.append(f'To do             {n_to_do:7} ({avg:6.2f}%)')
 
-        avg = avg_or_zero(n_keywords, n_completed)
-        stats_strings.append(f'Keywords:     {n_keywords:7} ({avg:6.2f}%)')
+        for lab, tup in Label.labels.items():
+            if tup[0] == '':
+                continue
+            n = count[tup[0]]
+            keybinding = tup[1]
+            avg = avg_or_zero(n, n_completed)
+            padded_label = tup[0] + (' ' * (max_len - len(tup[0]) + 2))
+            stats_strings.append(f'[{keybinding}] {padded_label}{n:7} ({avg:6.2f}%)')
 
-        avg = avg_or_zero(n_relevant, n_completed)
-        stats_strings.append(f'Relevant:     {n_relevant:7} ({avg:6.2f}%)')
+        # avg = avg_or_zero(n_keywords, n_completed)
+        # stats_strings.append(f'  Keyword    {n_keywords:7} ({avg:6.2f}%)')
 
-        avg = avg_or_zero(n_noise, n_completed)
-        stats_strings.append(f'Noise:        {n_noise:7} ({avg:6.2f}%)')
+        # avg = avg_or_zero(n_relevant, n_completed)
+        # stats_strings.append(f'  Relevant   {n_relevant:7} ({avg:6.2f}%)')
 
-        avg = avg_or_zero(n_autonoise, n_completed)
-        stats_strings.append(f'Autonoise:    {n_autonoise:7} ({avg:6.2f}%)')
+        # avg = avg_or_zero(n_noise, n_completed)
+        # stats_strings.append(f'  Noise      {n_noise:7} ({avg:6.2f}%)')
 
-        avg = avg_or_zero(n_not_relevant, n_completed)
-        stats_strings.append(f'Not relevant: {n_not_relevant:7} ({avg:6.2f}%)')
+        # avg = avg_or_zero(n_not_relevant, n_completed)
+        # stats_strings.append(f'  Not relevant {n_not_relevant:7} ({avg:6.2f}%)')
 
-        avg = avg_or_zero(n_stopword, n_completed)
-        stats_strings.append(f'Stopwords:    {n_stopword:7} ({avg:6.2f}%)')
+        # avg = avg_or_zero(n_stopword, n_completed)
+        # stats_strings.append(f'  Stopwords  {n_stopword:7} ({avg:6.2f}%)')
 
-        avg = avg_or_zero(n_later, n_completed)
-        stats_strings.append(f'Postponed:    {n_later:7} ({avg:6.2f}%)')
+        # avg = avg_or_zero(n_postponed, n_completed)
+        # stats_strings.append(f'  Postponed  {n_postponed:7} ({avg:6.2f}%)')
 
-        s = 'Related:      {:7}'
+        # avg = avg_or_zero(n_autonoise, n_completed)
+        # stats_strings.append(f'  Autonoise  {n_autonoise:7} ({avg:6.2f}%)')
+
+        s = 'Related           {:7}'
         if self.related_count >= 0:
             s = s.format(self.related_count)
         else:
@@ -1169,13 +1175,13 @@ def fawoc_main(terms, args, review, last_reviews, logger=None, profiler=None):
                 w.related = ''
 
     win_width = args.width
-    rows = 10
-    terms_rows = 28
+    rows = 14
+    terms_rows = 24
 
     gui = Gui(win_width, terms_rows, rows, review, args.no_info_file)
     fawoc = Fawoc(args, terms, review, gui, profiler, logger)
 
-    classifing_keys = Label.get_classifying_keys()
+    classifing_keys = Label.get_classifying_keybindings()
 
     fawoc.add_key_binding(classifing_keys, lambda e: classify_kb(e, fawoc))
     fawoc.add_key_binding(['a'], lambda e: autonoise_kb(e, fawoc))
@@ -1274,8 +1280,6 @@ def fawoc_run(args):
 
     profiler_logger.info("CLASSIFIED: {}".format(terms.count_classified()))
     profiler_logger.info("DATAFILE '{}'".format(datafile_path))
-    profiler_logger.info("*** PROGRAM TERMINATED ***")
-    debug_logger.info("*** FAWOC TERMINATED ***")
 
     if review != Label.labels['NONE']:
         # ending review mode we must save some info
@@ -1289,6 +1293,8 @@ def fawoc_run(args):
         terms.to_tsv(args.datafile)
         terms.save_service_data(args.datafile,
                                 save_invariant=not args.no_info_file)
+    profiler_logger.info("*** PROGRAM TERMINATED ***")
+    debug_logger.info("*** FAWOC TERMINATED ***")
 
 
 def main():
